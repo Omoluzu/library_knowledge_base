@@ -1,0 +1,11 @@
+*.db
+*.bkp
+*.html
+
+__pycache__
+.venv
+.mypy_cache
+.idea
+html
+*.egg-info
+dev.py

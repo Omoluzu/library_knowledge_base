@@ -1,0 +1,8 @@
+[build-system]
+requires = ["setuptools>=75.6.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "QFRFaq"
+description = "Qt for Russian FAQ"
+version = "1.0.0"
