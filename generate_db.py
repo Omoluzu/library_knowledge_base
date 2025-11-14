@@ -48,7 +48,7 @@ list_page_opengl = [
 
 if __name__ == '__main__':
 
-    # db_script.create_tables()
+    db_script.create_tables()
 
     helper = pyside6.QFRFaqPage(page_name='qtextdocument')
     db_script.safe_page_to_db(helper=helper)
