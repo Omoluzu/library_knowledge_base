@@ -38,26 +38,32 @@ list_page_qt = [
     "qrunnable",
     "qtextcursor",
     "qtextblock",
-    "qtextdocument"
+    "qtextdocument",
+    "qpaintextedit",
+    "qfile"
 ]
 
 list_page_opengl = [
-    'glStencilOp'
+    "glStencilOp",
+    # "gluLookAt"
+    "glCullFace",
+    "glEnable",
 ]
 
 
 if __name__ == '__main__':
 
-    db_script.create_tables()
+    # db_script.create_tables()
 
-    helper = pyside6.QFRFaqPage(page_name='qtextdocument')
+    helper = pyside6.QFRFaqPage(page_name='qlist')
     db_script.safe_page_to_db(helper=helper)
 
     # for page in list_page:
     #     helper = QFRFaqPage(page_name=page)
     #     db_script.safe_page_to_db(helper=helper)
 
-    # gl = opengl.OpenGLFunc(func_name='glStencilOp')
+    # gl_name = 'glEnable'
+    # gl = opengl.OpenGLFunc(func_name=gl_name)
 
     # session = Session()
 
@@ -71,7 +77,7 @@ if __name__ == '__main__':
     # #     description_ru=save_desc
     # # )
     # session.add(OpenGlFunc(
-    #     name='glStencilOp',
+    #     name=gl_name,
     #     description_ru=save_desc
     # ))
 

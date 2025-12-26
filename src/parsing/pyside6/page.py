@@ -79,6 +79,11 @@ class QFRFaqPage:
         return self.soup.find('h1', class_='title').text
 
     @property
+    def requisites(self) -> element.Tag:
+        """TODO: """
+        return self.soup.find("table", class_="alignedsummary requisites")
+
+    @property
     def func(self) -> List[QFRFaqPageFunc]:
         """Получения информации по функциями класса
 
@@ -110,7 +115,7 @@ class QFRFaqPage:
         return div_description.find_all('p')
 
     @property
-    def property(self) -> List[QFRFaqPageProperty]:
+    def prop(self) -> List[QFRFaqPageProperty]:
         """Получение информации по атрибутам класса
 
         Returns:
@@ -134,3 +139,27 @@ class QFRFaqPage:
 
         # print(prop)
         return prop
+
+    @property
+    def inherits(self) -> List[str]:
+        """Наследуют
+
+        Returns:
+            List[str]: Список имен наследуемых классов
+        """
+
+        for tr in self.requisites.find_all("tr"):
+            title, element = tr.find_all("td")
+            if title.text == " Inherits:":
+                return element.text.strip().split(' and ')
+
+        return []
+
+    @property
+    def inherited_by(self) -> List[str]:
+        """Унаследовано
+
+        Returns:
+            List[str]: Список классов унаследованных от текущего
+        """
+        return []

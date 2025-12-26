@@ -1,2 +1,3 @@
-from .func import *  # NOQA
-from .name_class import *  # NOQA
+from .func import *  # noqa
+from .name_class import *  # noqa
+from .pyside6 import *  # noqa

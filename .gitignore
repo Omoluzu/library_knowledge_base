@@ -5,7 +5,6 @@
 __pycache__
 .venv
 .mypy_cache
-.idea
 html
 *.egg-info
 dev.py

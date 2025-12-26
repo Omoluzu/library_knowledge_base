@@ -1,9 +1,24 @@
 import nltk
+import asyncio
 from nltk.tokenize import sent_tokenize
 from deep_translator import GoogleTranslator
 
 nltk.download('punkt_tab')
 
+
+async def async_translate(text: str):
+    sentences = sent_tokenize(text)
+    translator = GoogleTranslator(source='auto', target='ru')
+    try:
+        translations = translator.translate_batch(batch=sentences)
+        await asyncio.sleep(.1)
+    except Exception:
+        return ''
+
+    try:
+        return ' '.join(translations)
+    except Exception:
+        return ''
 
 def translate(text: str):
     sentences = sent_tokenize(text)

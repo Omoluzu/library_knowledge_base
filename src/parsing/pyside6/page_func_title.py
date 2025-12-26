@@ -2,14 +2,22 @@ from typing import Optional
 
 import re
 
+# RE_MATH_TITLE = (
+#     r"(?:(?:(?P<return_type>\[.*\])(?: ))?)"
+#     r"(const )?"
+#     r"(\w* ?<.*> )?"
+#     r"((?:\w*::)\w* ?)?(\w* )?"
+#     r"(?:(?P<class>(?:\&?)(?:\*?){title}(?:<\w>)?::)"
+#     r"(?P<name>\w*))"
+#     r"(?:=)?"
+#     r"(?:\((?P<args>.*)\))?"
+# )
+
 RE_MATH_TITLE = (
-    r"(?:(?:(?P<return_type>\[.*\])(?: ))?)"
-    r"(const )?"
-    r"(\w* ?<.*> )?"
-    r"((?:\w*::)\w* ?)?(\w* )?"
-    r"(?:(?P<class>(?:\&?)(?:\*?){title}(?:<\w>)?::)"
-    r"(?P<name>\w*))"
-    r"(?:=)?"
+    r"(?:(?:\[(?P<type>.*)\])?"
+    r"(?P<returns>.*)?"
+    r"(?:(?:\*?){title}(?:<\w>)?::)"
+    r"(?P<name>\w*))(?:=)?"
     r"(?:\((?P<args>.*)\))?"
 )
 
@@ -34,15 +42,15 @@ class PySide6FuncTitle:
         """Получение заголовка метода"""
         title: str = self.parent.title.strip()  # TODO: Фу. Parent
 
-        if 'Class' in title:
-            title = title.removesuffix('Class').strip()
+        if "Class" in title:
+            title = title.removesuffix("Class").strip()
 
         return title
 
     @property
     def _parse_title_func(self) -> re.Match[str]:
         """Парсинг заголовка"""
-        if not hasattr(self, '__cache_parse_title_func'):
+        if not hasattr(self, "__cache_parse_title_func"):
             self.__cache_parse_title_func = re.match(
                 RE_MATH_TITLE.format(title=self.title),
                 self.raw.text)
@@ -51,16 +59,26 @@ class PySide6FuncTitle:
 
     @property
     def raw_args(self) -> Optional[str]:
-        """Получение неформатированныхх аргументов метода
+        """Получение неформатированных аргументов метода
 
         Returns:
             Неформатированный аргументы метода
         """
         try:
-            return self._parse_title_func.group('args')
+            return self._parse_title_func.group("args")
         except AttributeError:
             print("-->", self.title)
             raise AttributeError
+
+    @property
+    def raw_returns(self) -> str:
+        """Получение неформатированных типов
+        значений возвращаемых при вызове метода
+
+        Returns:
+            str: Неформатированный тип возвращаемых значений метода
+        """
+        return self._parse_title_func.group("returns")
 
     @property
     def name(self) -> str:
@@ -69,4 +87,4 @@ class PySide6FuncTitle:
         Returns:
             Имя метода
         """
-        return self._parse_title_func.group('name')
+        return self._parse_title_func.group("name")

@@ -16,15 +16,20 @@ class NameFunc(NameFuncWidget):
     #  нажимается по элементу в виджете.
     itemClicked = Signal(models.page.PageFunc)
 
-    def addItem(self, items: List[models.page.PageFunc]) -> None:
+    def addItem(
+            self, items: List[models.page.PageFunc],
+            filter_text: str = ''
+    ) -> None:
         """Вставьте элемент с текстовой меткой в ​​конце виджета списка.
 
         Args:
-            items: Список моделей PageFunc.
+            items (List[models.page.PageFunc]): Список моделей PageFunc.
+            filter (str): Фильтр отображения текста
         """
         self.list_widget.clear()
         for func in items:
-            self.list_widget.addItem(FuncItemWidget(func))
+            if filter_text.lower() in func.name.lower():
+                self.list_widget.addItem(FuncItemWidget(func))
 
     @Slot(FuncItemWidget)
     def slot_item_clicked(self, item: FuncItemWidget) -> None:

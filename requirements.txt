@@ -1,5 +1,5 @@
-requests == 2.32.2
-beautifulsoup4 == 4.13.3
+requests == 2.23.3
+bs4 == 4.13.3
 sqlalchemy == 2.0.40
 nltk == 3.9.1
 deep_translator == 1.11.4

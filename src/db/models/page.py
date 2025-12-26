@@ -16,6 +16,8 @@ class Page(QtBase):
 
     title = Column(String, unique=True, nullable=False)
 
+    inherits = Column(String, default=None, nullable=True)
+
     description_ru = Column(String)
 
     func = relationship('PageFunc', backref=backref('page', lazy='joined'))
@@ -34,3 +36,5 @@ class PageFunc(QtBase):
     description_ru = Column(String)
 
     raw_args = Column(String, nullable=True)
+
+    raw_returns = Column(String, nullable=True)

@@ -14,3 +14,16 @@ class DBPageRepository:
             наименование классов"""
         return self._session.query(
             models.page.Page).order_by(models.page.Page.title).all()
+
+    def get(self, name: str) -> models.page.Page:
+        """Получение подели по её имени
+
+        Args:
+            name (str): наименование модели
+
+        Returns:
+            models.page.Page: models.page.Page
+        """
+
+        return self._session.query(
+            models.page.Page).filter_by(title=name).one()
