@@ -53,10 +53,10 @@ list_page_opengl = [
 
 if __name__ == '__main__':
 
-    # db_script.create_tables()
+    db_script.create_tables()
 
-    helper = pyside6.QFRFaqPage(page_name='qlist')
-    db_script.safe_page_to_db(helper=helper)
+    # helper = pyside6.QFRFaqPage(page_name='qlist')
+    # db_script.safe_page_to_db(helper=helper)
 
     # for page in list_page:
     #     helper = QFRFaqPage(page_name=page)
