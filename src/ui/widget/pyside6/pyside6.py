@@ -18,18 +18,10 @@ class PySide6(PySide6Widget):
         self.setConfig()
         self.setConnect()
 
-    def setConfig(self) -> None:
-        self.pages_widget.addItem(self._repo_page.get_all())
-
-    def setConnect(self) -> None:
-        self.pages_widget.itemClicked.connect(self.slot_item_clicked)
-        self.func_widget.itemClicked.connect(self.slot_func_item_clicked)
-        self.filter.textChanged.connect(self.slot_filter_text_changed)
-
     def refresh_pages(self) -> None:
         """Обновление данных виджета"""
         self.pages_widget.clear()
-        self.pages_widget.addItem(
+        self.pages_widget.addItems(
             self._repo_page.get_all())
         self.pages_widget.update()
 
@@ -39,6 +31,7 @@ class PySide6(PySide6Widget):
         model_pages = self._repo_page.get(current_pages_name)
         self.slot_item_clicked(model_pages)
 
+    # TODO: Слоты не слоты
     def slot_filter_text_changed(self, text: str) -> None:
         """Слот на изменение текста в поле фильтра
 
@@ -48,7 +41,11 @@ class PySide6(PySide6Widget):
         self.refresh_func()
 
     def slot_item_clicked(self, item: models.page.Page) -> None:
-        """Клик по наименованию виджет"""
+        """Клик по наименованию виджет
+
+        Args:
+            item (models.page.Page): TODO:
+        """
         self.func_widget.addItem(item.func, filter_text=self.filter.text())
 
         text = (
@@ -57,6 +54,23 @@ class PySide6(PySide6Widget):
         )
 
         self.description_widget.setText(text)
+
+    def slot_item_deleter(self, item: models.page.Page) -> None:
+        """TODO:
+
+        Args:
+            item (models.page.Page): TODO:
+        """
+        self._repo_page.remove(item)
+        self.refresh_pages()
+
+    def slot_item_open(self, item: models.page.Page) -> None:
+        """TODO:
+
+        Args:
+            item (models.page.Page): TODO:
+        """
+        print("slot_item_open", item)
 
     def slot_func_item_clicked(
             self, item: models.page.PageFunc) -> None:
@@ -68,3 +82,17 @@ class PySide6(PySide6Widget):
             f"\n\n{item.description_ru}"
         )
         self.description_widget.setText(text)
+
+    def setConfig(self) -> None:
+        self.pages_widget.addItems(self._repo_page.get_all())
+
+        total = self.height()
+        self.main_splitter.setSizes(  # type: ignore
+            [int(total * 0.2), int(total * 0.2), int(total * 0.6)])
+
+    def setConnect(self) -> None:
+        self.pages_widget.itemClicked.connect(self.slot_item_clicked)
+        self.pages_widget.itemDeleter.connect(self.slot_item_deleter)
+        self.pages_widget.itemOpen.connect(self.slot_item_open)
+        self.func_widget.itemClicked.connect(self.slot_func_item_clicked)
+        self.filter.textChanged.connect(self.slot_filter_text_changed)

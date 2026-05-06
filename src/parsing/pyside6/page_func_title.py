@@ -1,21 +1,15 @@
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 
 import re
 
-# RE_MATH_TITLE = (
-#     r"(?:(?:(?P<return_type>\[.*\])(?: ))?)"
-#     r"(const )?"
-#     r"(\w* ?<.*> )?"
-#     r"((?:\w*::)\w* ?)?(\w* )?"
-#     r"(?:(?P<class>(?:\&?)(?:\*?){title}(?:<\w>)?::)"
-#     r"(?P<name>\w*))"
-#     r"(?:=)?"
-#     r"(?:\((?P<args>.*)\))?"
-# )
+
+if TYPE_CHECKING:
+    from bs4 import element
+
 
 RE_MATH_TITLE = (
     r"(?:(?:\[(?P<type>.*)\])?"
-    r"(?P<returns>.*)?"
+    r"(?P<returns>.*[^(])?"
     r"(?:(?:\*?){title}(?:<\w>)?::)"
     r"(?P<name>\w*))(?:=)?"
     r"(?:\((?P<args>.*)\))?"
@@ -24,36 +18,35 @@ RE_MATH_TITLE = (
 
 class PySide6FuncTitle:
     """Строка с наименование функции для PySide6"""
-    def __init__(self, parent: object, raw: str) -> None:
+    def __init__(
+            self, title_class_name: str, raw: "element.Tag"
+    ) -> None:
         """Инициализация
 
         Args:
-            parent (object): Родитель
+            title_class_name (str): Наименование заголовка класса
             raw (str): Неформатированный заголовок
         """
-        self.parent = parent
+        self.title_class_name = title_class_name
         self.raw = raw
 
     def __str__(self) -> str:
         return self.name
 
     @property
-    def title(self) -> str:
-        """Получение заголовка метода"""
-        title: str = self.parent.title.strip()  # TODO: Фу. Parent
-
-        if "Class" in title:
-            title = title.removesuffix("Class").strip()
-
-        return title
-
-    @property
     def _parse_title_func(self) -> re.Match[str]:
-        """Парсинг заголовка"""
+        """Получение данных при парсинге заголовка
+
+        Returns:
+            re.Match[str]: Данные заголовка
+        """
         if not hasattr(self, "__cache_parse_title_func"):
-            self.__cache_parse_title_func = re.match(
-                RE_MATH_TITLE.format(title=self.title),
+            parse_title_func = re.match(
+                RE_MATH_TITLE.format(title=self.title_class_name),
                 self.raw.text)
+
+            if parse_title_func:
+                self.__cache_parse_title_func = parse_title_func
 
         return self.__cache_parse_title_func
 
@@ -67,7 +60,7 @@ class PySide6FuncTitle:
         try:
             return self._parse_title_func.group("args")
         except AttributeError:
-            print("-->", self.title)
+            print("-->", self.title_class_name)
             raise AttributeError
 
     @property
@@ -87,4 +80,9 @@ class PySide6FuncTitle:
         Returns:
             Имя метода
         """
-        return self._parse_title_func.group("name")
+        # NOTE. Старая реализация, удалить как подойдет время
+        # return self._parse_title_func.group("name")
+
+        name = self.raw["id"]
+        assert isinstance(name, str)
+        return name

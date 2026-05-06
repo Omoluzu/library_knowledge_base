@@ -1,3 +1,5 @@
+from typing import Any
+
 from .connection import main_engine, opengl_engine
 from .models.page import QtBase
 from .models.opengl import OpenGLBase
@@ -15,10 +17,12 @@ from sqlalchemy.orm import sessionmaker
 
 
 class Session:
+    """TODO: """
     _instance = None
     __session = None
 
     def __new__(cls):
+        """TODO: """
         if not cls._instance:
             cls._instance = super(Session, cls).__new__(cls)
             cls.__session = sessionmaker(binds={
@@ -28,5 +32,6 @@ class Session:
 
         return cls._instance
 
-    def __getattr__(self, name):
+    def __getattr__(self, name: Any) -> Any:
+        """TODO: """
         return getattr(self.__session, name)

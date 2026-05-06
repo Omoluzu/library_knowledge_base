@@ -7,16 +7,21 @@ from PySide6.QtWidgets import (
     QPushButton,
     QVBoxLayout,
     QHBoxLayout,
+    QProgressBar,
 )
 from PySide6.QtCore import Qt, Signal
-from PySide6.QtGui import QKeyEvent, QPalette, QColor
+from PySide6.QtGui import QPalette, QColor
 
 
 if TYPE_CHECKING:
-    from fqrfaq import CentralWidget
+    from PySide6.QtGui import QKeyEvent, QShowEvent
+
+    from src.ui.widget.main import MainCentralWidget
 
 
 class AddElementPopup(QWidget):
+    """TODO: """
+
     app_width: int = 400
     """Ширина виджета"""
 
@@ -24,9 +29,16 @@ class AddElementPopup(QWidget):
     """Сигнал на добавление нового элемента"""
 
     def __init__(
-            self, parent: "CentralWidget", *args: Any, **kwargs: Any) -> None:
+            self, parent: "MainCentralWidget", *args: Any, **kwargs: Any
+    ) -> None:
+        """TODO:
+
+        Args:
+            parent (MainCentralWidget): TODO:
+        """
         super().__init__(parent, *args, **kwargs)
 
+        self.app = parent
         self.setGeometry(0, 0, parent.width(), parent.height())
 
         self.setAutoFillBackground(True)
@@ -50,6 +62,9 @@ class AddElementPopup(QWidget):
         self.input_line_edit.setStyleSheet(
             """background-color:#d7e4c8""")
         self.input_line_edit.setFocus()
+
+        self.progress = QProgressBar()
+        self.progress.setStyleSheet("""border-radius: 0px;""")
 
         close_button = QPushButton("X", self.popup_content)
         close_button.setFixedSize(self.app_width // 5, 50)
@@ -77,16 +92,30 @@ class AddElementPopup(QWidget):
         layer.setSpacing(0)
         layer.addWidget(
             self.input_line_edit, alignment=Qt.AlignmentFlag.AlignCenter)
+        layer.addWidget(self.progress)
         layer.addLayout(layer_control_button)
+
+    def showEvent(self, event: "QShowEvent") -> None:
+        self.setGeometry(0, 0, self.app.width(), self.app.height())
+        self.popup_content.setGeometry(
+            (self.width() - self.app_width) // 2, (self.height() - 200) // 2,
+            self.app_width, 200)
+
+        self.input_line_edit.clear()
+        self.input_line_edit.setFocus()
+
+        self.progress.reset()
+        super().showEvent(event)
 
     def slot_add_element(self) -> None:
         """Отработка сигнала нажатия на кнопку add"""
         self.addElement.emit(self.input_line_edit.text().lower())
 
     def slot_close_popup(self) -> None:
-        self.setParent(None)
+        """TODO:"""
+        self.hide()
 
-    def keyPressEvent(self, event: QKeyEvent) -> None:
+    def keyPressEvent(self, event: "QKeyEvent") -> None:
         if event.key() == Qt.Key.Key_Return:
             self.slot_add_element()
         elif event.key() == Qt.Key.Key_Escape:

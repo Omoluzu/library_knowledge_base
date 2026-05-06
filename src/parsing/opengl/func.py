@@ -25,8 +25,13 @@ class OpenGLFunc:
         return requests.get(self.page)
 
     @property
+    # TODO: Точно такой же метод есть в pyside6 сделай абстрактынй класс
     def text(self) -> str:
-        """Содержимое html страницы"""
+        """Содержимое html страницы
+
+        Returns:
+            TODO:
+        """
         # Считываем данные из файла если файла создан.
         if os.path.exists(self.path_local_html_name):
             try:
@@ -62,11 +67,20 @@ class OpenGLFunc:
 
     @property
     def soup(self):
+        """TODO:
+
+        Returns:
+            _type_: _description_
+        """
         return BeautifulSoup(self.text, 'html.parser')
 
     @property
     def description(self):
-        """Получение описание текста"""
+        """Получение описание текста
+
+        Returns:
+            TODO:
+        """
         desc = []
 
         div_description = self.soup.find('div', id='description')

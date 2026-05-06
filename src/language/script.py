@@ -7,6 +7,7 @@ nltk.download('punkt_tab')
 
 
 async def async_translate(text: str):
+    """TODO:"""
     sentences = sent_tokenize(text)
     translator = GoogleTranslator(source='auto', target='ru')
     try:
@@ -20,7 +21,9 @@ async def async_translate(text: str):
     except Exception:
         return ''
 
+
 def translate(text: str):
+    """TODO: """
     sentences = sent_tokenize(text)
     translator = GoogleTranslator(source='auto', target='ru')
     try:

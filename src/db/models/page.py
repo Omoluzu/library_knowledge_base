@@ -22,6 +22,8 @@ class Page(QtBase):
 
     func = relationship('PageFunc', backref=backref('page', lazy='joined'))
 
+    # TODO: Где repr?
+
 
 class PageFunc(QtBase):
     __tablename__ = 'pages_func'
@@ -38,3 +40,5 @@ class PageFunc(QtBase):
     raw_args = Column(String, nullable=True)
 
     raw_returns = Column(String, nullable=True)
+
+    # TODO: Где repr?

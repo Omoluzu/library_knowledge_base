@@ -1,150 +1,110 @@
-import asyncio
-from multiprocessing import Pool
-
-from PySide6.QtCore import QObject, Signal, QRunnable
+import time
+import traceback
+from typing import List, Any
 
 from db import Session
 from db.models import page
-# from parsing import pyside6
 from parsing.pyside6 import QFRFaqPage
+from PySide6.QtCore import Signal, QThread, QObject
 from language import script as language_script
 
 
-class SafeRunnable(QRunnable):
-    class Signals(QObject):
-        # Сигнал завершения процесса просчета точек для отрисовки заготовок
-        finished = Signal()
-        # Сигнал передающий исключение возникшее в процессе работы.
-        error = Signal(str)
+class TranslateObject(QThread):
+    """TODO:"""
+    message = Signal(dict)
+    """TODO:"""
+    error = Signal(str)
+    """TODO: """
 
-    def __init__(self, name: str, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
+    def __init__(
+            self, parent: QObject, name: str, *args: Any, **kwargs: Any
+    ) -> None:
+        """TODO: """
+        super().__init__(parent, *args, **kwargs)
         self.name = name
-        self.signals = self.Signals()
 
     def run(self) -> None:
+        """TODO:"""
         try:
-            with Pool(processes=1) as pool:
-                pool.apply(self.run_save_object, (self.name,))
-                self.signals.finished.emit()
+            helper = QFRFaqPage(page_name=self.name)
+            try:
+                self.message.emit({
+                    "command": "start_translate", "title": helper.title(),
+                    "total": len(helper.func) + len(helper.prop),
+                })
+            except AttributeError:
+                print(f"run.AttributeError.name = {self.name}")
+                raise
 
-        except Exception as e:
-            print("Exception", str(e))
-            self.signals.error.emit(str(e))
+            session = Session()
 
-    @staticmethod
-    def run_save_object(name: str) -> None:
-        helper = QFRFaqPage(page_name=name)
+            func_description = ''
+            for desc in helper.description:
+                func_description += (
+                    language_script.translate(desc.text) + '\n\n')
 
-        session = Session()
-
-        func_description = ''
-        for desc in helper.description:
-            func_description += (language_script.translate(desc.text) + '\n\n')
-
-        __page = page.Page(
-            html_name=helper.html_name,
-            title=helper.title,
-            inherits=",".join(helper.inherits),
-            description_ru=func_description,
-        )
-        session.add(__page)
-        session.commit()
-
-        print('-- FUNCTION --')
-        for func in helper.func:
-            list_desc = []
-            for desc in func.description:
-                list_desc.append(language_script.translate(desc.text))
-
-            print(func.name)
-            save_desc = '\n'.join(list_desc)
-            func = page.PageFunc(
-                name=str(func.name),
-                page=__page,
-                description_ru=save_desc,
-                raw_args=func.name.raw_args,
-                raw_returns=func.name.raw_returns,
+            __page = page.Page(
+                html_name=helper.html_name,
+                title=helper.title(),
+                inherits=",".join(helper.inherits),
+                description_ru=func_description,
             )
-            session.add(func)
+            session.add(__page)
+            session.commit()
 
-        print('-- PROPERTY --')
-        for _prop in helper.prop:
-            list_prop = []
-            for desc in _prop.description:
-                list_prop.append(language_script.translate(desc.text))
+            for helper_func in helper.func:
+                list_desc: List[str] = []
+                for description in helper_func.description:
+                    list_desc.append(
+                        language_script.translate(description.text))
+                    time.sleep(.05)
 
-            print(_prop.name)
-            save_prop = '\n'.join(list_prop)
-            prop = page.PageFunc(
-                name=str(_prop.name),
-                page=__page,
-                description_ru=save_prop
-            )
-            session.add(prop)
+                self.message.emit({
+                    "command": "add_translate",  "type": "func",
+                    "translate": helper_func.name.name, "title": helper.title()
+                })
+                save_desc = '\n'.join(list_desc)
+                func = page.PageFunc(
+                    name=str(helper_func.name),
+                    page=__page,
+                    description_ru=save_desc,
+                    raw_args=helper_func.name.raw_args,
+                    raw_returns=helper_func.name.raw_returns,
+                )
+                session.add(func)
 
-        session.commit()
+            for _prop in helper.prop:
+                list_prop: List[str] = []
+                for _description in _prop.description:
+                    list_prop.append(
+                        language_script.translate(_description.text))
+                    time.sleep(.05)
 
+                self.message.emit({
+                    "command": "add_translate", "translate": _prop.name.name,
+                    "type": "property", "title": helper.title()
+                })
+                save_prop = '\n'.join(list_prop)
+                prop = page.PageFunc(
+                    name=str(_prop.name),
+                    page=__page,
+                    description_ru=save_prop
+                )
+                session.add(prop)
 
-class SafeObject(QObject):
-    finished = Signal()
+            session.commit()
 
-    async def run(self, helper: QFRFaqPage) -> None:
-        session = Session()
+            self.message.emit({
+                "command": "finished_translate",
+                "title": helper.title()
+            })
 
-        func_description = ''
-        for desc in helper.description:
-            text = await language_script.async_translate(desc.text)
-            func_description += (text + '\n\n')
+        except Exception:
+            self.error.emit(traceback.format_exc)
+            traceback.print_exc()
 
-        __page = page.Page(
-            html_name=helper.html_name,
-            title=helper.title,
-            inherits=",".join(helper.inherits),
-            description_ru=func_description,
-        )
-        session.add(__page)
-        session.commit()
-
-        print('-- FUNCTION --')
-        for func in helper.func:
-            list_desc = []
-            for desc in func.description:
-                text = await language_script.async_translate(desc.text)
-                list_desc.append(text)
-                # await asyncio.sleep(.1)
-
-            print(func.name)
-            save_desc = '\n'.join(list_desc)
-            func = page.PageFunc(
-                name=str(func.name),
-                page=__page,
-                description_ru=save_desc,
-                raw_args=func.name.raw_args,
-                raw_returns=func.name.raw_returns,
-            )
-            session.add(func)
-
-        print('-- PROPERTY --')
-        for _prop in helper.prop:
-            list_prop = []
-            for desc in _prop.description:
-                text = await language_script.async_translate(desc.text)
-                list_prop.append(text)
-                # await asyncio.sleep(.1)
-
-            print(_prop.name)
-            save_prop = '\n'.join(list_prop)
-            prop = page.PageFunc(
-                name=str(_prop.name),
-                page=__page,
-                description_ru=save_prop
-            )
-            session.add(prop)
-
-        session.commit()
-
-        self.finished.emit()
+        finally:
+            self.deleteLater()
 
 
 def safe_page_to_db(helper: QFRFaqPage) -> None:
@@ -156,7 +116,7 @@ def safe_page_to_db(helper: QFRFaqPage) -> None:
 
     __page = page.Page(
         html_name=helper.html_name,
-        title=helper.title,
+        title=helper.title(),
         inherits=",".join(helper.inherits),
         description_ru=func_description,
     )
@@ -165,9 +125,9 @@ def safe_page_to_db(helper: QFRFaqPage) -> None:
 
     print('-- FUNCTION --')
     for func in helper.func:
-        list_desc = []
-        for desc in func.description:
-            list_desc.append(language_script.translate(desc.text))
+        list_desc: List[str] = []
+        for func_desc in func.description:
+            list_desc.append(language_script.translate(func_desc.text))
 
         print(func.name)
         save_desc = '\n'.join(list_desc)
@@ -182,9 +142,9 @@ def safe_page_to_db(helper: QFRFaqPage) -> None:
 
     print('-- PROPERTY --')
     for _prop in helper.prop:
-        list_prop = []
-        for desc in _prop.description:
-            list_prop.append(language_script.translate(desc.text))
+        list_prop: List[str] = []
+        for prop_desc in _prop.description:
+            list_prop.append(language_script.translate(prop_desc.text))
 
         print(_prop.name)
         save_prop = '\n'.join(list_prop)

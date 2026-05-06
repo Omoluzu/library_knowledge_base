@@ -1,3 +1,3 @@
 from .page import QFRFaqPage
 
-__all__ = ["QFRFaqPage"]
+__all__ = ("QFRFaqPage", )

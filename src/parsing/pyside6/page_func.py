@@ -1,33 +1,32 @@
+from typing import List, TYPE_CHECKING
 
 from .page_func_title import PySide6FuncTitle
+from .page_func_description import PySide6FuncDescription
 
 
-class QFRFaqPageFuncDescription:
-    def __init__(self, parent: object, raw: str) -> None:
-        self.parent = parent
-        self.raw = raw
-
-    @property
-    def text(self) -> str:
-        return self.raw.text
+if TYPE_CHECKING:
+    from bs4 import element
+    from parsing.pyside6 import QFRFaqPage
 
 
-class QFRFaqPageFunc:
-    def __init__(self, parent: object, raw_name: str) -> None:
+class PySide6WidgetFunc:
+    """Парсинг выбранной функции класса"""
+    def __init__(self, parent: "QFRFaqPage", raw_name: "element.Tag") -> None:
         """Инициализация
 
         Args:
-            raw_name: HTML с наименованием функции
+            parent (QFRFaqPage): Родительский класс функции
+            raw_name (str): HTML с наименованием функции
         """
         self.parent = parent
-        self.name = PySide6FuncTitle(parent=parent, raw=raw_name)
-        self.description = []
+        self.name = PySide6FuncTitle(
+            title_class_name=parent.title.name, raw=raw_name)
+        self.description: List[PySide6FuncDescription] = []
 
-    def append_description_raw(self, raw_description: str) -> None:
+    def append_description_raw(self, raw_description: "element.Tag") -> None:
         """Добавление описания к функции
 
         Args:
-            raw_description: HTML абзац с описанием.
+            raw_description (element.Tab): HTML абзац с описанием.
         """
-        self.description.append(
-            QFRFaqPageFuncDescription(parent=self.parent, raw=raw_description))
+        self.description.append(PySide6FuncDescription(raw=raw_description))

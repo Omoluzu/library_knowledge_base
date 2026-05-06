@@ -1,10 +1,11 @@
 *.db
 *.bkp
 *.html
+*.egg-info
 
-__pycache__
 .venv
 .mypy_cache
 html
-*.egg-info
+__pycache__
+
 dev.py

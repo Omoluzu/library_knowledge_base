@@ -6,3 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "QFRFaq"
 description = "Qt for Russian FAQ"
 version = "1.0.0"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
